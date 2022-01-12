@@ -2,23 +2,12 @@ package optimismclient
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
+	"crypto/ecdsa"
 	"math/big"
-	"strings"
-	"sync"
-	"time"
 
-	"github.com/ChainSafe/chainbridge-core/chains/evm/evmclient"
-	"github.com/ChainSafe/chainbridge-core/crypto/secp256k1"
-	"github.com/ChainSafe/chainbridge-core/keystore"
-	"github.com/ChainSafe/chainbridge-optimism-module/listener"
+	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmclient"
+	"github.com/ChainSafe/chainbridge-core/config/chain"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog/log"
 )
@@ -46,69 +35,68 @@ type rollupInfo struct {
 }
 
 type OptimismClient struct {
-	*ethclient.Client
-	rpClient         *rpc.Client
-	nonceLock        sync.Mutex
-	config           *OptimismConfig
-	nonce            *big.Int
+	// NOTE: If we wanted or needed to have the same private variables within the EVMClient struct inside the OptimismClient
+	// we would essentially need to replicate the entire EVMClient. Currently it seems that this can be avoided.
+	// *ethclient.Client
+	// kp               *secp256k1.Keypair
+	// gethClient       *gethclient.Client
+	// rpClient         *rpc.Client
+	// nonce            *big.Int
+	// nonceLock        sync.Mutex
+	*evmclient.EVMClient
+	verifyRollup     bool
 	verifierRpClient *rpc.Client
 }
 
-func NewEVMClient() *OptimismClient {
-	return &OptimismClient{}
-}
+// NewEVMClientFromParams creates a client for EVMChain with provided
+// private key.
+func NewOptimismClientFromParams(url string, privateKey *ecdsa.PrivateKey, verifyRollup bool, verifierEndpoint string) (*OptimismClient, error) {
+	c := &OptimismClient{}
 
-func (c *OptimismClient) Configurate(path string, name string) error {
-	rawCfg, err := GetConfig(path, name)
+	sequencerClient, err := evmclient.NewEVMClientFromParams(url, privateKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	cfg, err := ParseConfig(rawCfg)
-	if err != nil {
-		return err
-	}
-	c.config = cfg
-	generalConfig := cfg.SharedEVMConfig.GeneralChainConfig
-	log.Debug().Msgf("config: %v", c.config)
+	c.EVMClient = sequencerClient
 
-	kp, err := keystore.KeypairFromAddress(generalConfig.From, keystore.EthChain, generalConfig.KeystorePath, generalConfig.Insecure)
-	if err != nil {
-		panic(err)
-	}
-	krp := kp.(*secp256k1.Keypair)
-	c.config.kp = krp
-
-	log.Info().Str("url", generalConfig.Endpoint).Msg("Connecting to optimism chain...")
-	rpcClient, err := rpc.DialContext(context.TODO(), generalConfig.Endpoint)
-	log.Debug().Msgf("general endpoint: %v", generalConfig.Endpoint)
-	if err != nil {
-		log.Debug().Msgf("endpoint: %v", generalConfig.Endpoint)
-		log.Debug().Msgf("dial context err: %v", err)
-		return err
-	}
-	c.Client = ethclient.NewClient(rpcClient)
-	c.rpClient = rpcClient
-
-	c.configureVerifier()
-
-	if generalConfig.LatestBlock {
-		curr, err := c.LatestBlock()
+	c.verifyRollup = verifyRollup
+	if c.verifyRollup {
+		err := c.configureVerifier(verifierEndpoint)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		cfg.SharedEVMConfig.StartBlock = curr
 	}
 
-	return nil
-
+	return c, nil
 }
 
-func (c *OptimismClient) configureVerifier() error {
-	// The VerifierEndpoint in the config is currently purely for the verifier replica and is read-only.
-	// This client is currently only used for getting info from the verifier as to whether the rollup is valid
-	verifierRpClient, err := rpc.DialContext(context.TODO(), c.config.VerifierEndpoint)
+// NewOptimismClient creates a client for the Optimism chain configured with specified config.
+func NewOptimismClient(cfg *chain.OptimismConfig) (*OptimismClient, error) {
+	c := &OptimismClient{}
+
+	sequencerClient, err := evmclient.NewEVMClient(&cfg.EVMConfig)
 	if err != nil {
-		log.Debug().Msgf("endpoint: %v", c.config.VerifierEndpoint)
+		return nil, err
+	}
+	c.EVMClient = sequencerClient
+
+	c.verifyRollup = cfg.VerifyRollup
+	if c.verifyRollup {
+		err := c.configureVerifier(cfg.VerifierEndpoint)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return c, nil
+}
+
+func (c *OptimismClient) configureVerifier(url string) error {
+	// The VerifierEndpoint in the config is for the verifier replica and is read-only.
+	// This RPC client is only used for getting info from the verifier as to whether the rollup is valid
+	verifierRpClient, err := rpc.DialContext(context.TODO(), url)
+	if err != nil {
+		log.Debug().Msgf("could not connect to verifier endpoint: %v", url)
 		log.Debug().Msgf("dial context err: %v", err)
 		return err
 	}
@@ -116,7 +104,19 @@ func (c *OptimismClient) configureVerifier() error {
 	return nil
 }
 
-func (c *OptimismClient) RollupInfo() (*rollupInfo, error) {
+// The OptimismClient treats only the last verified index or before as a valid chain
+func (c *OptimismClient) LatestBlock() (*big.Int, error) {
+	info, err := c.rollupInfo()
+	if err != nil {
+		return nil, err
+	}
+	log.Debug().Msgf("Rollup info: %v", info)
+	verifiedIndex := new(big.Int).SetUint64(info.RollupContext.VerifiedIndex)
+
+	return verifiedIndex, nil
+}
+
+func (c *OptimismClient) rollupInfo() (*rollupInfo, error) {
 	var info *rollupInfo
 
 	err := c.verifierRpClient.CallContext(context.TODO(), &info, "rollup_getInfo")
@@ -126,241 +126,41 @@ func (c *OptimismClient) RollupInfo() (*rollupInfo, error) {
 	return info, err
 }
 
-func (c *OptimismClient) IsRollupVerified(blockNumber uint64) (bool, error) {
-	log.Debug().Msg("Just got inside method IsRollupVerified")
+// NOTE: Left only for reference for reviewers. Separate strategy for checking Optimism chain verification over treating latest block as latest verified index
+// TO BE DELETED OR TO REPLACE STRATEGY OF `LatestBlock` above
+// func (c *OptimismClient) isRollupVerified(blockNumber uint64) (bool, error) {
+// 	//log.Debug().Msg("Just got inside method IsRollupVerified")
 
-	if !c.config.VerifyRollup {
-		return true, nil
-	}
+// 	if !c.verifyRollup {
+// 		return true, nil
+// 	}
 
-	//status := c.syncRollup()
-	info, err := c.RollupInfo()
-	if err != nil {
-		return false, err
-	}
+// 	info, err := c.RollupInfo()
+// 	if err != nil {
+// 		return false, err
+// 	}
 
-	log.Debug().Msgf("Block number to check against index: %v", blockNumber)
-	log.Debug().Msgf("Rollup info: %v", info)
-	if blockNumber <= info.RollupContext.VerifiedIndex {
-		return true, nil
-	} else {
-		return false, nil
-	}
-}
+// 	log.Debug().Msgf("Block number to check against index: %v", blockNumber)
+// 	log.Debug().Msgf("Rollup info: %v", info)
+// 	if blockNumber <= info.RollupContext.VerifiedIndex {
+// 		return true, nil
+// 	} else {
+// 		return false, nil
+// 	}
+// }
 
-type headerNumber struct {
-	Number *big.Int `json:"number"           gencodec:"required"`
-}
+// func (c *OptimismClient) FetchDepositLogs(ctx context.Context, address common.Address, startBlock *big.Int, endBlock *big.Int) ([]*evmclient.DepositLogs, error) {
 
-func (h *headerNumber) UnmarshalJSON(input []byte) error {
-	type headerNumber struct {
-		Number *hexutil.Big `json:"number" gencodec:"required"`
-	}
-	var dec headerNumber
-	if err := json.Unmarshal(input, &dec); err != nil {
-		return err
-	}
-	if dec.Number == nil {
-		return errors.New("missing required field 'number' for Header")
-	}
-	h.Number = (*big.Int)(dec.Number)
-	return nil
-}
+// 	if verified, err := c.isRollupVerified(endBlock.Uint64()); err != nil {
+// 		log.Error().Msgf("Error while checking whether chain is verified, Block Number: %v", endBlock)
+// 		time.Sleep(listener.BlockRetryInterval)
+// 		return nil, err
+// 	} else if !verified {
+// 		time.Sleep(listener.BlockRetryInterval)
+// 		return nil, fmt.Errorf("chain is not verified at current index, Block Number: %v", endBlock)
+// 	}
 
-// LatestBlock returns the latest block from the current chain
-// In Optimism, the latest block refers to the latest CTC batch index
-func (c *OptimismClient) LatestBlock() (*big.Int, error) {
-	var head *headerNumber
+// 	logs, err := c.EVMClient.FetchDepositLogs(ctx, address, startBlock, endBlock)
 
-	err := c.rpClient.CallContext(context.Background(), &head, "eth_getBlockByNumber", toBlockNumArg(nil), false)
-	if err == nil && head == nil {
-		err = ethereum.NotFound
-	}
-	return head.Number, err
-}
-
-const (
-	DepositSignature string = "Deposit(uint8,bytes32,uint64)"
-)
-
-func (c *OptimismClient) FetchDepositLogs(ctx context.Context, contractAddress common.Address, startBlock *big.Int, endBlock *big.Int) ([]*listener.DepositLogs, error) {
-	definition := "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"destinationChainID\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"resourceID\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"depositNonce\",\"type\":\"uint64\"}],\"name\":\"Deposit\",\"type\":\"event\"}]"
-	contractAbi, err := abi.JSON(strings.NewReader(definition))
-	if err != nil {
-		log.Fatal().Msgf("error: %v", err)
-	}
-
-	logs, err := c.FilterLogs(ctx, buildQuery(contractAddress, DepositSignature, startBlock, endBlock))
-	if err != nil {
-		return nil, err
-	}
-	depositLogs := make([]*listener.DepositLogs, 0)
-	for _, l := range logs {
-		log.Info().Msgf("deposit log block number: %v", l.BlockNumber)
-		var dl listener.DepositLogs
-		err := contractAbi.UnpackIntoInterface(&dl, "Deposit", l.Data)
-		if err != nil {
-			log.Fatal().Msgf("error: %v", err)
-		}
-		log.Info().Msgf("Deposit Logs dest chain id: %v, deposit nonce: %v, resource id: %v", dl.DestinationChainID, dl.DepositNonce, dl.ResourceID)
-		depositLogs = append(depositLogs, &dl)
-	}
-
-	return depositLogs, nil
-}
-
-// SendRawTransaction accepts rlp-encode of signed transaction and sends it via RPC call
-func (c *OptimismClient) SendRawTransaction(ctx context.Context, tx []byte) error {
-	return c.rpClient.CallContext(ctx, nil, "eth_sendRawTransaction", hexutil.Encode(tx))
-}
-
-func (c *OptimismClient) CallContract(ctx context.Context, callArgs map[string]interface{}, blockNumber *big.Int) ([]byte, error) {
-	var hex hexutil.Bytes
-	err := c.rpClient.CallContext(ctx, &hex, "eth_call", callArgs, toBlockNumArg(blockNumber))
-	if err != nil {
-		return nil, err
-	}
-	return hex, nil
-}
-
-func (c *OptimismClient) PendingCallContract(ctx context.Context, callArgs map[string]interface{}) ([]byte, error) {
-	var hex hexutil.Bytes
-	err := c.rpClient.CallContext(ctx, &hex, "eth_call", callArgs, "pending")
-	if err != nil {
-		return nil, err
-	}
-	return hex, nil
-}
-
-//func (c *EVMClient) ChainID()
-
-func (c *OptimismClient) SignAndSendTransaction(ctx context.Context, tx evmclient.CommonTransaction) (common.Hash, error) {
-	id, err := c.ChainID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	rawTX, err := tx.RawWithSignature(c.config.kp.PrivateKey(), id)
-	if err != nil {
-		return common.Hash{}, err
-	}
-
-	err = c.SendRawTransaction(ctx, rawTX)
-	if err != nil {
-		return common.Hash{}, err
-	}
-	return tx.Hash(), nil
-}
-
-func (c *OptimismClient) RelayerAddress() common.Address {
-	return c.config.kp.CommonAddress()
-}
-
-func (c *OptimismClient) LockNonce() {
-	c.nonceLock.Lock()
-}
-
-func (c *OptimismClient) UnlockNonce() {
-	c.nonceLock.Unlock()
-}
-
-func (c *OptimismClient) UnsafeNonce() (*big.Int, error) {
-	var err error
-	for i := 0; i <= 10; i++ {
-		if c.nonce == nil {
-			nonce, err := c.PendingNonceAt(context.Background(), c.config.kp.CommonAddress())
-			if err != nil {
-				time.Sleep(1)
-				continue
-			}
-			c.nonce = big.NewInt(0).SetUint64(nonce)
-			return c.nonce, nil
-		}
-		return c.nonce, nil
-	}
-	return nil, err
-}
-
-func (c *OptimismClient) UnsafeIncreaseNonce() error {
-	nonce, err := c.UnsafeNonce()
-	log.Debug().Str("nonce", nonce.String()).Msg("Before increase")
-	if err != nil {
-		return err
-	}
-	c.nonce = nonce.Add(nonce, big.NewInt(1))
-	log.Debug().Str("nonce", c.nonce.String()).Msg("After increase")
-	return nil
-}
-
-func (c *OptimismClient) GasLimit(msg ethereum.CallMsg) *big.Int {
-	gas, err := c.EstimateGas(context.TODO(), msg)
-	if err != nil {
-		log.Fatal().Msgf("could not estimate gas when transacting with optimism: %v", err)
-	}
-	return big.NewInt(int64(gas))
-}
-
-func (c *OptimismClient) GasPrice() (*big.Int, error) {
-	// Kovan Optimism requires this gas price at the moment
-	if c.config.SharedEVMConfig.GeneralChainConfig.Name == "optimism" {
-		return big.NewInt(15000000), nil
-	}
-
-	// Local optimism needs gas price of 0, set maxGasPrice to 0 in config
-	gasPrice, err := c.SafeEstimateGas(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-	return gasPrice, nil
-}
-
-func (c *OptimismClient) SafeEstimateGas(ctx context.Context) (*big.Int, error) {
-	suggestedGasPrice, err := c.SuggestGasPrice(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
-	gasPrice := multiplyGasPrice(suggestedGasPrice, c.config.SharedEVMConfig.GasMultiplier)
-
-	if gasPrice.Cmp(c.config.SharedEVMConfig.MaxGasPrice) == 1 {
-		return c.config.SharedEVMConfig.MaxGasPrice, nil
-	} else {
-		return gasPrice, nil
-	}
-}
-
-func multiplyGasPrice(gasEstimate *big.Int, gasMultiplier *big.Float) *big.Int {
-
-	gasEstimateFloat := new(big.Float).SetInt(gasEstimate)
-
-	result := gasEstimateFloat.Mul(gasEstimateFloat, gasMultiplier)
-
-	gasPrice := new(big.Int)
-
-	result.Int(gasPrice)
-
-	return gasPrice
-}
-
-func toBlockNumArg(number *big.Int) string {
-	if number == nil {
-		return "latest"
-	}
-	return hexutil.EncodeBig(number)
-}
-
-// buildQuery constructs a query for the bridgeContract by hashing sig to get the event topic
-func buildQuery(contract common.Address, sig string, startBlock *big.Int, endBlock *big.Int) ethereum.FilterQuery {
-	query := ethereum.FilterQuery{
-		FromBlock: startBlock,
-		ToBlock:   endBlock,
-		Addresses: []common.Address{contract},
-		Topics: [][]common.Hash{
-			{crypto.Keccak256Hash([]byte(sig))},
-		},
-	}
-	return query
-}
-
-func (c *OptimismClient) GetConfig() *OptimismConfig {
-	return c.config
-}
+// 	return logs, err
+// }
