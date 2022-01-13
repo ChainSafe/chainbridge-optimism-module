@@ -4,7 +4,7 @@
     {
       "id": 1,
       "from": "0x8e0a907331554AF72563Bd8D43051C2E64Be5d35",
-      "name": "evm1",
+      "name": "evm2",
       "type": "evm",
       "endpoint": "ws://evm1:8546",
       "bridge": "0xd606A00c1A39dA53EA7Bb3Ab570BBE40b156EB66",
@@ -18,7 +18,7 @@
     {
       "id": 2,
       "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
-      "name": "optimism1",
+      "name": "optimism2",
       "type": "optimism",
       "endpoint": "ws://l2geth:8546",
       "bridge": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
@@ -29,7 +29,7 @@
       "maxGasPrice": 1,
       "blockConfirmations": 1,
       "verifyRollup": true,
-      "verifierEndpoint": "ws://verifier:8546"
+      "verifierEndpoint": "ws://l2geth:8546"
     }
   ]
 }
