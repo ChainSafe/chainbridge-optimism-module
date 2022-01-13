@@ -212,9 +212,9 @@ func (s *IntegrationTestSuite) TestErc721Deposit() {
 	s.Error(err)
 
 	// Check on evm2 that token is minted to destination address
-	owner, err := erc721Contract2.Owner(tokenId)
+	// owner, err := erc721Contract2.Owner(tokenId)
 	s.Nil(err)
-	s.Equal(dstAddr.String(), owner.String())
+	s.Equal(dstAddr.String(), "invalid")
 }
 
 func (s *IntegrationTestSuite) TestGenericDeposit() {
