@@ -2,12 +2,12 @@ module github.com/ChainSafe/chainbridge-optimism-module
 
 go 1.16
 
-// To be removed when optimism config is inside core
-replace github.com/ChainSafe/chainbridge-core => ../chainbridge-core
-
 require (
-	github.com/ChainSafe/chainbridge-core v0.0.0-20220110124723-abb0bf918502
+	github.com/ChainSafe/chainbridge-core v0.0.0-20220113010920-020bab317b42 // branch maxim/optimism-e2e
+	github.com/centrifuge/go-substrate-rpc-client v2.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/rs/zerolog v1.26.1
-	github.com/spf13/viper v1.10.1 // indirect
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.10.1
+	github.com/stretchr/testify v1.7.0
 )
