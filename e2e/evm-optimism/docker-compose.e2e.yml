@@ -27,7 +27,7 @@ services:
     build:
       context: ../../.
       dockerfile: Dockerfile
-    entrypoint: "sh ./relayer.sh"
+    entrypoint: sh -c "sleep 15 && ./relayer.sh"
     # command: run --config /cfg/config_evm-optimism.json --keystore /keys --fresh
     depends_on:
       - evm1
@@ -48,7 +48,7 @@ services:
     build:
       context: ../../.
       dockerfile: Dockerfile
-    entrypoint: "sh ./relayer.sh"
+    entrypoint: sh -c "sleep 15 && ./relayer.sh"
     # command: run --config /cfg/config_evm-optimism.json --keystore /keys --fresh
     depends_on:
       - evm1
@@ -69,7 +69,7 @@ services:
     build:
       context: ../../.
       dockerfile: Dockerfile
-    entrypoint: "sh ./relayer.sh"
+    entrypoint: sh -c "sleep 15 && ./relayer.sh"
     # command: run --config /cfg/config_evm-optimism.json --keystore /keys --fresh
     depends_on:
       - evm1
