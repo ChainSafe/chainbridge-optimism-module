@@ -76,6 +76,8 @@ github.com/ChainSafe/chainbridge-core v0.0.0-20220112150218-115ed9739b28 h1:FQBx
 github.com/ChainSafe/chainbridge-core v0.0.0-20220112150218-115ed9739b28/go.mod h1:pPeoZTMorrRL+bUOvLDa0P5pe8dZpNLNJBDq3ZE+O4M=
 github.com/ChainSafe/chainbridge-core v0.0.0-20220113010920-020bab317b42 h1:wt8XtTgi5ajVKqJpPz6g5N7igs2e32oti0yv3qnZRb0=
 github.com/ChainSafe/chainbridge-core v0.0.0-20220113010920-020bab317b42/go.mod h1:nD2ZgTFipu/8GZAM+MWdRKJOhGmO2OxWeIn3tEH1ie8=
+github.com/ChainSafe/chainbridge-core v0.0.0-20220113021106-23cb35063d74 h1:vUt7jN54ZU7MbMQvFw7Sv6nT4nx924bD/gMPJsaac7Q=
+github.com/ChainSafe/chainbridge-core v0.0.0-20220113021106-23cb35063d74/go.mod h1:pPeoZTMorrRL+bUOvLDa0P5pe8dZpNLNJBDq3ZE+O4M=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
