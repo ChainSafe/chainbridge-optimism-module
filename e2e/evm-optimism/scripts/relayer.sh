@@ -2,7 +2,7 @@
 
 set -e
 
-RETRIES=${RETRIES:-40}
+RETRIES=${RETRIES:-120}
 
 # waits for l2geth to be up
 curl --fail \
@@ -10,7 +10,7 @@ curl --fail \
     --silent \
     --retry-connrefused \
     --retry $RETRIES \
-    --retry-delay 1 \
+    --retry-delay 5 \
     --output /dev/null \
     $L2_NODE_WEB3_URL
 
@@ -21,6 +21,7 @@ curl --fail \
 ./bridge evm-cli accounts import --private-key "0000000000000000000000000000000000000000000000000000000000626f62" --password "passwordpassword" # Bob
 ./bridge evm-cli accounts import --private-key "00000000000000000000000000000000000000000000000000636861726c6965" --password "passwordpassword" # Charlie
 
+mkdir /keys
 mv *.key /keys
 
 ./bridge run --config /cfg/config_evm-optimism.json --keystore /keys --fresh
