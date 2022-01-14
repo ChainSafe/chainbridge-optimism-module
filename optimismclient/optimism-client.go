@@ -6,7 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmclient"
-	"github.com/ChainSafe/chainbridge-core/config/chain"
+	"github.com/ChainSafe/chainbridge-optimism-module/config"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog/log"
@@ -71,7 +71,7 @@ func NewOptimismClientFromParams(url string, privateKey *ecdsa.PrivateKey, verif
 }
 
 // NewOptimismClient creates a client for the Optimism chain configured with specified config.
-func NewOptimismClient(cfg *chain.OptimismConfig) (*OptimismClient, error) {
+func NewOptimismClient(cfg *config.OptimismConfig) (*OptimismClient, error) {
 	c := &OptimismClient{}
 
 	sequencerClient, err := evmclient.NewEVMClient(&cfg.EVMConfig)

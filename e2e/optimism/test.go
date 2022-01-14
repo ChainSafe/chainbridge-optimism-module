@@ -6,8 +6,8 @@ import (
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmclient"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/transactor"
-	"github.com/ChainSafe/chainbridge-core/chains/optimism/optimismclient"
 	"github.com/ChainSafe/chainbridge-core/e2e/evm"
+	"github.com/ChainSafe/chainbridge-optimism-module/optimismclient"
 	substrateTypes "github.com/centrifuge/go-substrate-rpc-client/types"
 	"github.com/ethereum/go-ethereum/common"
 

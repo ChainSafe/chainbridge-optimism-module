@@ -6,8 +6,8 @@ package cmd
 import (
 	evmCLI "github.com/ChainSafe/chainbridge-core/chains/evm/cli"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/cli/local"
-	"github.com/ChainSafe/chainbridge-core/e2e/evm-optimism/example/app"
 	"github.com/ChainSafe/chainbridge-core/flags"
+	"github.com/ChainSafe/chainbridge-optimism-module/e2e/evm-optimism/example/app"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )

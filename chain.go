@@ -3,35 +3,33 @@
 package optimism
 
 import (
-	"fmt"
-
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/bridge"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmgaspricer"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/transactor"
+	"github.com/ChainSafe/chainbridge-optimism-module/config"
+	"github.com/ChainSafe/chainbridge-optimism-module/optimismclient"
 
 	"github.com/ChainSafe/chainbridge-core/blockstore"
 	"github.com/ChainSafe/chainbridge-core/chains/evm"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/listener"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/voter"
-	"github.com/ChainSafe/chainbridge-core/chains/optimism/optimismclient"
 	"github.com/ChainSafe/chainbridge-core/config/chain"
-	"github.com/ChainSafe/chainbridge-core/relayer/message"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/rs/zerolog/log"
 )
 
 // OptimismChain is struct that aggregates all data required for
 type OptimismChain struct {
+	evm.EVMChain
 	listener evm.EventListener
 	writer   evm.ProposalVoter
 	kvdb     blockstore.KeyValueReaderWriter
-	config   *chain.OptimismConfig
+	config   *config.OptimismConfig
 }
 
 // SetupDefaultOptimismChain sets up an OptimismChain with all supported handlers configured
 func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.TxFabric, db blockstore.KeyValueReaderWriter) (*OptimismChain, error) {
-	config, err := chain.NewOptimismConfig(rawConfig)
+	config, err := config.NewOptimismConfig(rawConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -66,50 +64,4 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 
 func NewOptimismChain(listener evm.EventListener, writer evm.ProposalVoter, kvdb blockstore.KeyValueReaderWriter, config *chain.OptimismConfig) *OptimismChain {
 	return &OptimismChain{listener: listener, writer: writer, kvdb: kvdb, config: config}
-}
-
-// PollEvents is the goroutine that polls blocks and searches Deposit events in them.
-// Events are then sent to eventsChan.
-func (c *OptimismChain) PollEvents(stop <-chan struct{}, sysErr chan<- error, eventsChan chan *message.Message) {
-	log.Info().Msg("Polling Blocks...")
-
-	startBlock, err := blockstore.GetStartBlock(
-		c.kvdb,
-		*c.config.EVMConfig.GeneralChainConfig.Id,
-		c.config.EVMConfig.StartBlock,
-		c.config.EVMConfig.GeneralChainConfig.LatestBlock,
-		c.config.EVMConfig.GeneralChainConfig.FreshStart,
-	)
-	if err != nil {
-		sysErr <- fmt.Errorf("error %w on getting last stored block", err)
-		return
-	}
-
-	ech := c.listener.ListenToEvents(
-		startBlock,
-		c.config.EVMConfig.BlockConfirmations,
-		c.config.EVMConfig.BlockRetryInterval,
-		*c.config.EVMConfig.GeneralChainConfig.Id,
-		c.kvdb,
-		stop,
-		sysErr,
-	)
-	for {
-		select {
-		case <-stop:
-			return
-		case newEvent := <-ech:
-			// Here we can place middlewares for custom logic?
-			eventsChan <- newEvent
-			continue
-		}
-	}
-}
-
-func (c *OptimismChain) Write(msg *message.Message) error {
-	return c.writer.VoteProposal(msg)
-}
-
-func (c *OptimismChain) DomainID() uint8 {
-	return *c.config.EVMConfig.GeneralChainConfig.Id
 }

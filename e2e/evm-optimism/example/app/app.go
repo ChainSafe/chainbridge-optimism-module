@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmtransaction"
-	"github.com/ChainSafe/chainbridge-core/chains/optimism"
+	optimism "github.com/ChainSafe/chainbridge-optimism-module"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm"
 	"github.com/ChainSafe/chainbridge-core/config"

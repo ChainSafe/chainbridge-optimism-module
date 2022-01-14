@@ -3,9 +3,7 @@
 
 package main
 
-import (
-	"github.com/ChainSafe/chainbridge-core/e2e/evm-optimism/example/cmd"
-)
+import "github.com/ChainSafe/chainbridge-optimism-module/e2e/evm-optimism/example/cmd"
 
 func main() {
 	cmd.Execute()
