@@ -1,6 +1,7 @@
 package optimism
 
 import (
+	"errors"
 	"math/big"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/bridge"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/centrifuge"
-	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/erc20"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/erc721"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmgaspricer"
@@ -131,38 +131,42 @@ func (s *IntegrationTestSuite) SetupTest()     {}
 func (s *IntegrationTestSuite) TearDownTest()  {}
 
 func (s *IntegrationTestSuite) TestErc20Deposit() {
-	dstAddr := keystore.TestKeyRing.EthereumKeys[keystore.BobKey].CommonAddress()
+	panic(errors.New("try to fail"))
 
-	transactor1 := transactor.NewSignAndSendTransactor(s.fabric1, s.gasPricer, s.client)
-	erc20Contract1 := erc20.NewERC20Contract(s.client, s.erc20ContractAddr, transactor1)
-	bridgeContract1 := bridge.NewBridgeContract(s.client, s.bridgeAddr, transactor1)
+	/*
+		dstAddr := keystore.TestKeyRing.EthereumKeys[keystore.BobKey].CommonAddress()
 
-	transactor2 := transactor.NewSignAndSendTransactor(s.fabric2, s.gasPricer, s.client2)
-	erc20Contract2 := erc20.NewERC20Contract(s.client2, s.erc20ContractAddr2, transactor2)
+		transactor1 := transactor.NewSignAndSendTransactor(s.fabric1, s.gasPricer, s.client)
+		erc20Contract1 := erc20.NewERC20Contract(s.client, s.erc20ContractAddr, transactor1)
+		bridgeContract1 := bridge.NewBridgeContract(s.client, s.bridgeAddr, transactor1)
 
-	senderBalBefore, err := erc20Contract1.GetBalance(local.EveKp.CommonAddress())
-	s.Nil(err)
-	destBalanceBefore, err := erc20Contract2.GetBalance(dstAddr)
-	s.Nil(err)
+		transactor2 := transactor.NewSignAndSendTransactor(s.fabric2, s.gasPricer, s.client2)
+		erc20Contract2 := erc20.NewERC20Contract(s.client2, s.erc20ContractAddr2, transactor2)
 
-	amountToDeposit := big.NewInt(1000000)
-	_, err = bridgeContract1.Erc20Deposit(dstAddr, amountToDeposit, s.erc20RID, 2, transactor.TransactOptions{})
-	if err != nil {
-		return
-	}
-	s.Nil(err)
+		senderBalBefore, err := erc20Contract1.GetBalance(local.EveKp.CommonAddress())
+		s.Nil(err)
+		destBalanceBefore, err := erc20Contract2.GetBalance(dstAddr)
+		s.Nil(err)
 
-	err = evm.WaitForProposalExecuted(s.client2, s.bridgeAddr2)
-	s.Nil(err)
+		amountToDeposit := big.NewInt(1000000)
+		_, err = bridgeContract1.Erc20Deposit(dstAddr, amountToDeposit, s.erc20RID, 2, transactor.TransactOptions{})
+		if err != nil {
+			return
+		}
+		s.Nil(err)
 
-	senderBalAfter, err := erc20Contract1.GetBalance(s.ethAdminKey.CommonAddress())
-	s.Nil(err)
-	s.Equal(-1, senderBalAfter.Cmp(senderBalBefore))
+		err = evm.WaitForProposalExecuted(s.client2, s.bridgeAddr2)
+		s.Nil(err)
 
-	destBalanceAfter, err := erc20Contract2.GetBalance(dstAddr)
-	s.Nil(err)
-	//Balance has increased
-	s.Equal(1, destBalanceAfter.Cmp(destBalanceBefore))
+		senderBalAfter, err := erc20Contract1.GetBalance(s.ethAdminKey.CommonAddress())
+		s.Nil(err)
+		s.Equal(-1, senderBalAfter.Cmp(senderBalBefore))
+
+		destBalanceAfter, err := erc20Contract2.GetBalance(dstAddr)
+		s.Nil(err)
+		//Balance has increased
+		s.Equal(1, destBalanceAfter.Cmp(destBalanceBefore))
+	*/
 }
 
 func (s *IntegrationTestSuite) TestErc721Deposit() {
