@@ -5,9 +5,9 @@ import (
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmtransaction"
 	"github.com/ChainSafe/chainbridge-core/crypto/secp256k1"
+	"github.com/ChainSafe/chainbridge-optimism-module/e2e/optimism"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/cli/local"
-	"github.com/ChainSafe/chainbridge-core/e2e/optimism"
 	"github.com/stretchr/testify/suite"
 )
 
