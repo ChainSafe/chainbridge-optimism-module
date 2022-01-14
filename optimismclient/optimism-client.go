@@ -35,14 +35,6 @@ type rollupInfo struct {
 }
 
 type OptimismClient struct {
-	// NOTE: If we wanted or needed to have the same private variables within the EVMClient struct inside the OptimismClient
-	// we would essentially need to replicate the entire EVMClient. Currently it seems that this can be avoided.
-	// *ethclient.Client
-	// kp               *secp256k1.Keypair
-	// gethClient       *gethclient.Client
-	// rpClient         *rpc.Client
-	// nonce            *big.Int
-	// nonceLock        sync.Mutex
 	*evmclient.EVMClient
 	verifyRollup     bool
 	verifierRpClient *rpc.Client
