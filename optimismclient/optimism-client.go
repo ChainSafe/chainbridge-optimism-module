@@ -104,6 +104,7 @@ func (c *OptimismClient) configureVerifier(url string) error {
 	return nil
 }
 
+// LatestBlock returns latest verified block.
 // The OptimismClient treats only the last verified index or before as a valid chain
 func (c *OptimismClient) LatestBlock() (*big.Int, error) {
 	info, err := c.rollupInfo()
@@ -125,42 +126,3 @@ func (c *OptimismClient) rollupInfo() (*rollupInfo, error) {
 	}
 	return info, err
 }
-
-// NOTE: Left only for reference for reviewers. Separate strategy for checking Optimism chain verification over treating latest block as latest verified index
-// TO BE DELETED OR TO REPLACE STRATEGY OF `LatestBlock` above
-// func (c *OptimismClient) isRollupVerified(blockNumber uint64) (bool, error) {
-// 	//log.Debug().Msg("Just got inside method IsRollupVerified")
-
-// 	if !c.verifyRollup {
-// 		return true, nil
-// 	}
-
-// 	info, err := c.RollupInfo()
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	log.Debug().Msgf("Block number to check against index: %v", blockNumber)
-// 	log.Debug().Msgf("Rollup info: %v", info)
-// 	if blockNumber <= info.RollupContext.VerifiedIndex {
-// 		return true, nil
-// 	} else {
-// 		return false, nil
-// 	}
-// }
-
-// func (c *OptimismClient) FetchDepositLogs(ctx context.Context, address common.Address, startBlock *big.Int, endBlock *big.Int) ([]*evmclient.DepositLogs, error) {
-
-// 	if verified, err := c.isRollupVerified(endBlock.Uint64()); err != nil {
-// 		log.Error().Msgf("Error while checking whether chain is verified, Block Number: %v", endBlock)
-// 		time.Sleep(listener.BlockRetryInterval)
-// 		return nil, err
-// 	} else if !verified {
-// 		time.Sleep(listener.BlockRetryInterval)
-// 		return nil, fmt.Errorf("chain is not verified at current index, Block Number: %v", endBlock)
-// 	}
-
-// 	logs, err := c.EVMClient.FetchDepositLogs(ctx, address, startBlock, endBlock)
-
-// 	return logs, err
-// }
