@@ -3,6 +3,7 @@
 package optimism
 
 import (
+	"github.com/ChainSafe/chainbridge-core/chains/evm"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/bridge"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmgaspricer"
@@ -11,23 +12,14 @@ import (
 	"github.com/ChainSafe/chainbridge-optimism-module/optimismclient"
 
 	"github.com/ChainSafe/chainbridge-core/blockstore"
-	"github.com/ChainSafe/chainbridge-core/chains/evm"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/listener"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/voter"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// OptimismChain is struct that aggregates all data required for
-type OptimismChain struct {
-	*evm.EVMChain
-	listener evm.EventListener
-	writer   evm.ProposalVoter
-	kvdb     blockstore.KeyValueReaderWriter
-	config   *config.OptimismConfig
-}
-
-// SetupDefaultOptimismChain sets up an OptimismChain with all supported handlers configured
-func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.TxFabric, db blockstore.KeyValueReaderWriter) (*OptimismChain, error) {
+// SetupDefaultOptimismChain sets up an instance of EVMChain with optimism client setup that
+// tracks only verified tx batches.
+func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.TxFabric, db blockstore.KeyValueReaderWriter) (*evm.EVMChain, error) {
 	config, err := config.NewOptimismConfig(rawConfig)
 	if err != nil {
 		return nil, err
@@ -58,10 +50,5 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 		return nil, err
 	}
 
-	return NewOptimismChain(evmListener, evmVoter, db, config), nil
-}
-
-func NewOptimismChain(listener evm.EventListener, writer evm.ProposalVoter, kvdb blockstore.KeyValueReaderWriter, config *config.OptimismConfig) *OptimismChain {
-	evmChain := evm.NewEVMChain(listener, writer, kvdb, &config.EVMConfig)
-	return &OptimismChain{listener: listener, writer: writer, kvdb: kvdb, config: config, EVMChain: evmChain}
+	return evm.NewEVMChain(evmListener, evmVoter, db, &config.EVMConfig), nil
 }
