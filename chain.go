@@ -40,18 +40,18 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 
 	gasPricer := evmgaspricer.NewLondonGasPriceClient(client, nil)
 	t := transactor.NewSignAndSendTransactor(txFabric, gasPricer, client)
-	bridgeContract := bridge.NewBridgeContract(client, common.HexToAddress(config.EVMConfig.Bridge), t)
+	bridgeContract := bridge.NewBridgeContract(client, common.HexToAddress(config.Bridge), t)
 
 	eventHandler := listener.NewETHEventHandler(*bridgeContract)
-	eventHandler.RegisterEventHandler(config.EVMConfig.Erc20Handler, listener.Erc20EventHandler)
-	eventHandler.RegisterEventHandler(config.EVMConfig.Erc721Handler, listener.Erc721EventHandler)
-	eventHandler.RegisterEventHandler(config.EVMConfig.GenericHandler, listener.GenericEventHandler)
-	evmListener := listener.NewEVMListener(client, eventHandler, common.HexToAddress(config.EVMConfig.Bridge))
+	eventHandler.RegisterEventHandler(config.Erc20Handler, listener.Erc20EventHandler)
+	eventHandler.RegisterEventHandler(config.Erc721Handler, listener.Erc721EventHandler)
+	eventHandler.RegisterEventHandler(config.GenericHandler, listener.GenericEventHandler)
+	evmListener := listener.NewEVMListener(client, eventHandler, common.HexToAddress(config.Bridge))
 
 	mh := voter.NewEVMMessageHandler(*bridgeContract)
-	mh.RegisterMessageHandler(config.EVMConfig.Erc20Handler, voter.ERC20MessageHandler)
-	mh.RegisterMessageHandler(config.EVMConfig.Erc721Handler, voter.ERC721MessageHandler)
-	mh.RegisterMessageHandler(config.EVMConfig.GenericHandler, voter.GenericMessageHandler)
+	mh.RegisterMessageHandler(config.Erc20Handler, voter.ERC20MessageHandler)
+	mh.RegisterMessageHandler(config.Erc721Handler, voter.ERC721MessageHandler)
+	mh.RegisterMessageHandler(config.GenericHandler, voter.GenericMessageHandler)
 
 	evmVoter, err := voter.NewVoterWithSubscription(mh, client, bridgeContract)
 	if err != nil {

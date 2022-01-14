@@ -6,7 +6,7 @@ import (
 )
 
 type OptimismConfig struct {
-	EVMConfig        chain.EVMConfig // Contains configuration of Optimism l2geth client which is used to for sequencing transactions to Optimism
+	chain.EVMConfig  // Contains configuration of Optimism l2geth client which is used to for sequencing transactions to Optimism
 	VerifyRollup     bool
 	VerifierEndpoint string // This is the endpoint for an Optimism replica which is read-only and used only for verifying transactions
 }
