@@ -29,7 +29,7 @@
       "maxGasPrice": 1,
       "blockConfirmations": 1,
       "verifyRollup": true,
-      "verifierEndpoint": "ws://verifier:8548"
+      "verifierEndpoint": "ws://l2geth:8546"
     }
   ]
 }
