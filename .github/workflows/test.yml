@@ -1,19 +1,14 @@
-# Copyright 2020 ChainSafe Systems
-# SPDX-License-Identifier: LGPL-3.0-only
-
-name: Tests
-
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+name: Unit tests
 jobs:
   test:
-    name: Test
     strategy:
       matrix:
-        go-version: [ 1.15.x ]
-        platform: [ ubuntu-latest ]
+        go-version: [1.16.x]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
@@ -29,16 +24,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Test
-        run: |
-          make test
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        run: make test
+      - name: Cover
+        run:  echo "COVER=$(go tool cover -func cover.out | grep total | awk '{print substr($3, 1, length($3)-1)}')" >> $GITHUB_ENV
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          version: v1.36
-          args: --timeout=5m
+          issue-number: ${{github.event.number}}
+          body: |
+            Go Test coverage is ${{env.COVER}} %\ :sparkles: :sparkles: :sparkles:
