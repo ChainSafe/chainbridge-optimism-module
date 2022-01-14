@@ -18,6 +18,9 @@ get-lint:
 lint: get-lint
 	./bin/golangci-lint run ./... --timeout 5m0s
 
+test:
+	./scripts/unit_tests.sh
+
 e2e-setup:
 	docker-compose -f ./e2e/evm-optimism/docker-compose-nobuild.yml -f ./e2e/evm-optimism/docker-compose.e2e.yml up --scale verifier=1 -d
 
