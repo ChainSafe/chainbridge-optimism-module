@@ -19,7 +19,7 @@ import (
 
 // OptimismChain is struct that aggregates all data required for
 type OptimismChain struct {
-	evm.EVMChain
+	*evm.EVMChain
 	listener evm.EventListener
 	writer   evm.ProposalVoter
 	kvdb     blockstore.KeyValueReaderWriter
@@ -62,5 +62,6 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 }
 
 func NewOptimismChain(listener evm.EventListener, writer evm.ProposalVoter, kvdb blockstore.KeyValueReaderWriter, config *config.OptimismConfig) *OptimismChain {
-	return &OptimismChain{listener: listener, writer: writer, kvdb: kvdb, config: config}
+	evmChain := evm.NewEVMChain(listener, writer, kvdb, &config.EVMConfig)
+	return &OptimismChain{listener: listener, writer: writer, kvdb: kvdb, config: config, EVMChain: evmChain}
 }
