@@ -14,7 +14,6 @@ import (
 	"github.com/ChainSafe/chainbridge-core/chains/evm"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/listener"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/voter"
-	"github.com/ChainSafe/chainbridge-core/config/chain"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -62,6 +61,6 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 	return NewOptimismChain(evmListener, evmVoter, db, config), nil
 }
 
-func NewOptimismChain(listener evm.EventListener, writer evm.ProposalVoter, kvdb blockstore.KeyValueReaderWriter, config *chain.OptimismConfig) *OptimismChain {
+func NewOptimismChain(listener evm.EventListener, writer evm.ProposalVoter, kvdb blockstore.KeyValueReaderWriter, config *config.OptimismConfig) *OptimismChain {
 	return &OptimismChain{listener: listener, writer: writer, kvdb: kvdb, config: config}
 }

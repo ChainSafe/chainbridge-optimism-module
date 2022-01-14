@@ -88,7 +88,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	log.Debug().Msgf("Latest block %s", b.String())
 
-	config, err := local.PrepareLocalEVME2EEnv(ethClient, s.fabric1, 1, big.NewInt(2), s.ethAdminKey.CommonAddress(), nil)
+	config, err := local.PrepareLocalEVME2EEnv(ethClient, s.fabric1, 1, big.NewInt(2), s.ethAdminKey.CommonAddress())
 	if err != nil {
 		panic(err)
 	}
@@ -109,7 +109,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.genericRID = calls.SliceTo32Bytes(append(common.LeftPadBytes(config.GenericHandlerAddr.Bytes(), 31), uint8(1)))
 	s.erc721RID = calls.SliceTo32Bytes(append(common.LeftPadBytes(config.Erc721Addr.Bytes(), 31), uint8(2)))
 
-	cfg2, err := local.PrepareLocalEVME2EEnv(optimismClient, s.fabric2, 2, big.NewInt(2), s.optimismAdminKey.CommonAddress(), &config)
+	cfg2, err := local.PrepareLocalEVME2EEnv(optimismClient, s.fabric2, 2, big.NewInt(2), s.optimismAdminKey.CommonAddress())
 	if err != nil {
 		panic(err)
 	}

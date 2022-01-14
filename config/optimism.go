@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/ChainSafe/chainbridge-core/config/chain"
 	"github.com/mitchellh/mapstructure"
-	"github.com/rs/zerolog/log"
 )
 
 type OptimismConfig struct {
@@ -18,35 +17,22 @@ type RawOptimismConfig struct {
 	VerifierEndpoint   string `mapstructure:"verifierEndpoint"`
 }
 
-func (c *RawOptimismConfig) Validate() error {
-	if err := c.RawEVMConfig.Validate(); err != nil {
-		return err
-	}
-	return nil
-}
-
 // NewOptimismConfig decodes and validates an instance of an OptimismConfig from
 // raw chain config
 func NewOptimismConfig(chainConfig map[string]interface{}) (*OptimismConfig, error) {
-	log.Debug().Msg("got into optimism config")
-	var c RawOptimismConfig
-	err := mapstructure.Decode(chainConfig, &c)
-	if err != nil {
-		return nil, err
-	}
-	log.Debug().Msg("successfully decoded")
-	err = c.Validate()
+	evmConfig, err := chain.NewEVMConfig(chainConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	evmCfg, err := c.RawEVMConfig.ParseConfig()
+	var c RawOptimismConfig
+	err = mapstructure.Decode(chainConfig, &c)
 	if err != nil {
 		return nil, err
 	}
 
 	config := &OptimismConfig{
-		EVMConfig:        *evmCfg,
+		EVMConfig:        *evmConfig,
 		VerifyRollup:     c.VerifyRollup,
 		VerifierEndpoint: c.VerifierEndpoint,
 	}
