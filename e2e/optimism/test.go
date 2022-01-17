@@ -2,6 +2,7 @@ package optimism
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmclient"
@@ -70,6 +71,7 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
+	evm.TestTimeout = 180 * time.Second
 	ethClient, err := evmclient.NewEVMClientFromParams(s.endpoint1, s.ethAdminKey.PrivateKey())
 	if err != nil {
 		panic(err)
