@@ -3,9 +3,11 @@ package main
 import (
 	"testing"
 
+	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmclient"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmtransaction"
 	"github.com/ChainSafe/chainbridge-core/crypto/secp256k1"
-	"github.com/ChainSafe/chainbridge-optimism-module/e2e/optimism"
+	"github.com/ChainSafe/chainbridge-core/e2e/evm"
+	"github.com/ChainSafe/chainbridge-optimism-module/optimismclient"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/cli/local"
 	"github.com/stretchr/testify/suite"
@@ -20,17 +22,24 @@ const fundedOptimismPk = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d
 
 // Alice key is used by the relayer, Eve key is used as admin and depositter
 func TestRunE2ETests(t *testing.T) {
-	kp, err := secp256k1.NewKeypairFromString(fundedOptimismPk)
+	ethClient, err := evmclient.NewEVMClientFromParams(ETHEndpoint1, local.EveKp.PrivateKey())
 	if err != nil {
 		panic(err)
 	}
 
-	suite.Run(t, optimism.SetupEVM2OptimismTestSuite(
+	kp, err := secp256k1.NewKeypairFromString(fundedOptimismPk)
+	if err != nil {
+		panic(err)
+	}
+	optimismClient, err := optimismclient.NewOptimismClientFromParams(OptimismEndpoint1, kp.PrivateKey(), true, VerifierEndpoint1)
+	if err != nil {
+		panic(err)
+	}
+
+	suite.Run(t, evm.SetupEVM2EVMTestSuite(
 		evmtransaction.NewTransaction,
 		evmtransaction.NewTransaction,
-		ETHEndpoint1,
-		OptimismEndpoint1,
-		VerifierEndpoint1,
-		local.EveKp,
-		kp))
+		ethClient,
+		optimismClient,
+	))
 }
