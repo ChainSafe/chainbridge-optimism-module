@@ -68,6 +68,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/ChainSafe/chainbridge-core v0.0.0-20220114080149-d887cb5c4502 h1:oUpAZQ3ifwL1V6YRyYveW5o6R3ZO/QhEzbw7Hr8Svdg=
 github.com/ChainSafe/chainbridge-core v0.0.0-20220114080149-d887cb5c4502/go.mod h1:pPeoZTMorrRL+bUOvLDa0P5pe8dZpNLNJBDq3ZE+O4M=
+github.com/ChainSafe/chainbridge-core v0.0.0-20220114134451-d2845521eac3 h1:g2239mxJo4qpfqQqPC0zZmbaXtyZyqbGCwVLZWSU0KI=
+github.com/ChainSafe/chainbridge-core v0.0.0-20220114134451-d2845521eac3/go.mod h1:Nl4pM/lJ/Acf/mk4vDv9kXx5mvoupzz5Z8UpdTDUOjI=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
