@@ -3,7 +3,7 @@ module github.com/ChainSafe/chainbridge-optimism-module
 go 1.16
 
 require (
-	github.com/ChainSafe/chainbridge-core v0.0.0-20220117124345-5dece7523dca // branch maxim/optimism-e2e (GOPROXY=direct go get github.com/ChainSafe/chainbridge-core@maxim/optimism-e2e)
+	github.com/ChainSafe/chainbridge-core v0.0.0-20220117132250-e605c2cb1333 // branch maxim/optimism-e2e (GOPROXY=direct go get github.com/ChainSafe/chainbridge-core@maxim/optimism-e2e)
 	github.com/centrifuge/go-substrate-rpc-client v2.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/mitchellh/mapstructure v1.4.3
