@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmtransaction"
+	"github.com/ChainSafe/chainbridge-core/store"
 	optimism "github.com/ChainSafe/chainbridge-optimism-module"
 
 	"github.com/ChainSafe/chainbridge-core/chains/evm"
@@ -32,13 +33,14 @@ func Run() error {
 	if err != nil {
 		panic(err)
 	}
+	blockstore := store.NewBlockStore(db)
 
 	chains := []relayer.RelayedChain{}
 	for _, chainConfig := range configuration.ChainConfigs {
 		switch chainConfig["type"] {
 		case "evm":
 			{
-				chain, err := evm.SetupDefaultEVMChain(chainConfig, evmtransaction.NewTransaction, db)
+				chain, err := evm.SetupDefaultEVMChain(chainConfig, evmtransaction.NewTransaction, blockstore)
 				if err != nil {
 					panic(err)
 				}
@@ -47,7 +49,7 @@ func Run() error {
 			}
 		case "optimism":
 			{
-				chain, err := optimism.SetupDefaultOptimismChain(chainConfig, evmtransaction.NewTransaction, db)
+				chain, err := optimism.SetupDefaultOptimismChain(chainConfig, evmtransaction.NewTransaction, blockstore)
 				if err != nil {
 					panic(err)
 				}

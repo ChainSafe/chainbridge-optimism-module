@@ -7,11 +7,11 @@ import (
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/contracts/bridge"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/evmgaspricer"
-	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/transactor"
+	"github.com/ChainSafe/chainbridge-core/chains/evm/calls/transactor/signAndSend"
+	"github.com/ChainSafe/chainbridge-core/store"
 	"github.com/ChainSafe/chainbridge-optimism-module/config"
 	"github.com/ChainSafe/chainbridge-optimism-module/optimismclient"
 
-	"github.com/ChainSafe/chainbridge-core/blockstore"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/listener"
 	"github.com/ChainSafe/chainbridge-core/chains/evm/voter"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,7 +19,7 @@ import (
 
 // SetupDefaultOptimismChain sets up an instance of EVMChain with optimism client setup that
 // tracks only verified tx batches.
-func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.TxFabric, db blockstore.KeyValueReaderWriter) (*evm.EVMChain, error) {
+func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.TxFabric, db *store.BlockStore) (*evm.EVMChain, error) {
 	config, err := config.NewOptimismConfig(rawConfig)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func SetupDefaultOptimismChain(rawConfig map[string]interface{}, txFabric calls.
 	}
 
 	gasPricer := evmgaspricer.NewLondonGasPriceClient(client, nil)
-	t := transactor.NewSignAndSendTransactor(txFabric, gasPricer, client)
+	t := signAndSend.NewSignAndSendTransactor(txFabric, gasPricer, client)
 	bridgeContract := bridge.NewBridgeContract(client, common.HexToAddress(config.Bridge), t)
 
 	eventHandler := listener.NewETHEventHandler(*bridgeContract)
