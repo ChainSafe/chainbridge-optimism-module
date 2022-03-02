@@ -7,7 +7,7 @@ jobs:
   linter-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Run go fmt
         run: diff -u <(echo -n) <(gofmt -d -s .)
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: "1.17.x"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Run go vet
         run: go vet ./...
