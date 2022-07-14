@@ -1,9 +1,9 @@
-# Chainbridge optimism module
+# Sygma optimism module
 <a href="https://discord.gg/ykXsJKfhgq">
   <img alt="discord" src="https://img.shields.io/discord/593655374469660673?label=Discord&logo=discord&style=flat" />
 </a>
 
-Chainbridge optimism module is the part of Chainbrige-core framework. This module brings support of optimism compatible client module.
+Sygma optimism module is the part of Sygma-core framework. This module brings support of optimism compatible client module.
 
 *Project still in deep beta*
 - Chat with us on [discord](https://discord.gg/ykXsJKfhgq).
@@ -20,7 +20,7 @@ Refer to [installation](https://github.com/ChainSafe/chainbridge-docs/blob/devel
 ## Usage
 Module should be used along with core [framework](https://github.com/ChainSafe/chainbridge-core).
 
-Since chainbridge-optimism-module is a package it will require writing some extra code to get it running alongside [chainbridge-core](https://github.com/ChainSafe/chainbridge-core). Here you can find some examples
+Since sygma-optimism-module is a package it will require writing some extra code to get it running alongside [chainbridge-core](https://github.com/ChainSafe/chainbridge-core). Here you can find some examples
 [Example](https://github.com/ChainSafe/chainbridge-core-example)
 
 ### Differences Between EVM and Optimism module
